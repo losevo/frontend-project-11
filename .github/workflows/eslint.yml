@@ -1,0 +1,24 @@
+name: eslint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: npm install
+        run:
+          make install
+        env:
+          CI: true
+
+      - name: Run eslint
+        run: 
+          make lint
