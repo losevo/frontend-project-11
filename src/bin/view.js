@@ -3,15 +3,35 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
 import resourses from '../locales/index.js';
+import getRSSExample from './getRSS.js';
+import updateRSS from './updateRSS.js';
+
+// TODO: #1 Сделать асинхронную валидацию
+// TODO: #7 Добавить ошибки парсинга потоков
 
 const { ru } = resourses;
 const defaultLng = 'ru';
 
-// TODO: #1 Сделать асинхронную валидацию
-// TODO: #3 Подключить и разобраться с yup.setLocale()
+yup.setLocale({
+  mixed: {
+    default: 'Error',
+  },
+  string: {
+    url: 'errorValidURL',
+  },
+});
+
 const schema = yup.object().shape({
   url: yup.string().url().required().trim(),
 });
+
+const state = {
+  fields: {
+    url: '',
+  },
+  urlList: [],
+  errors: '',
+};
 
 const validate = (fields) => {
   try {
@@ -23,28 +43,19 @@ const validate = (fields) => {
 };
 
 const app = (i18nextInstance) => {
-  const state = {
-    fields: {
-      url: '',
-    },
-    urlList: [],
-    errors: [],
-  };
-
   const form = document.querySelector('form');
-
-  // TODO: #2 Добавить ошибки в state
-  const watchedState = onChange(state, () => {
-    const valid = validate(state.fields);
+  const watchedState = onChange(state, (path) => {
     const input = document.querySelector('input');
-    const feedbackParagraph = document.querySelector('.feedback');
-    if (Object.keys(valid).length > 0) {
-      input.classList.add('is-invalid');
-      feedbackParagraph.textContent = `${i18nextInstance.t('errorValidURL')}`;
-    }
-    if (Object.keys(valid).length === 0) {
-      input.classList.remove('is-invalid');
-      feedbackParagraph.textContent = '';
+    if (path === 'errors') {
+      const feedbackParagraph = document.querySelector('.feedback');
+      if (watchedState.errors.length > 0) {
+        input.classList.add('is-invalid');
+        feedbackParagraph.textContent = `${i18nextInstance.t(state.errors)}`;
+      }
+      if (watchedState.errors.length === 0) {
+        input.classList.remove('is-invalid');
+        feedbackParagraph.textContent = '';
+      }
     }
   });
 
@@ -52,9 +63,14 @@ const app = (i18nextInstance) => {
     e.preventDefault();
     watchedState.fields.url = e.target.url.value.trim();
     const valid = validate(state.fields);
-    if (Object.keys(valid).length === 0) {
+    if (_.has(valid, 'url')) {
+      watchedState.errors = valid.url.errors;
+    } else {
+      watchedState.errors = '';
       watchedState.urlList.push(watchedState.fields.url);
+      getRSSExample(watchedState.fields.url);
     }
+    updateRSS(state.urlList);
     console.log(state, e.target.url.value);
     form.focus();
     form.reset();
