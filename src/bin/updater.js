@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import axios from 'axios';
 import render from './render.js';
 
 const update = (state, i18nextInstance) => {
@@ -7,17 +8,23 @@ const update = (state, i18nextInstance) => {
     return;
   }
 
-  const promises = state.urlList.map((url) => fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+  const promises = state.urlList.map((url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => {
-      if (response.ok) return response.json();
+      if (response.status === 200) return response.data;
       throw console.log('net svyazi');
     })
     .then((data) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(data.contents, 'application/xhtml+xml');
+      if (doc.querySelector('parsererror')) {
+        state.errors = 'notContainRSS';
+        state.urlList.pop();
+        throw new Error();
+      }
       return doc;
     })
     .then((doc) => {
+      console.log(doc);
       const feed = doc.querySelector('title').innerHTML;
       const description = doc.querySelector('description').innerHTML;
       if (!state.rss.some((e) => e.feed === feed)) {
@@ -42,11 +49,9 @@ const update = (state, i18nextInstance) => {
       render(state, i18nextInstance);
     })
     .catch((e) => {
-      if (e.message === 'Load failed') {
+      console.log(e);
+      if (e.message === 'Network Error') {
         state.errors = 'errorNetwork';
-        state.urlList.pop();
-      } else {
-        state.errors = 'notContainRSS';
         state.urlList.pop();
       }
       render(state, i18nextInstance);
