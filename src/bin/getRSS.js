@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
 import render from './render.js';
 
 const feeds = [];
@@ -41,11 +40,11 @@ const getRSSExample = (state, i18nextInstance) => {
       render(state, i18nextInstance);
     })
     .catch((e) => {
-      if (_.startsWith(e.message, 'null')) {
-        state.errors = 'notContainRSS';
+      if (e.message === 'Load failed') {
+        state.errors = 'errorNetwork';
         state.urlList.pop();
       } else {
-        state.errors = 'errorNetwork';
+        state.errors = 'notContainRSS';
         state.urlList.pop();
       }
       render(state, i18nextInstance);

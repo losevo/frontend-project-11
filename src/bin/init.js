@@ -49,7 +49,6 @@ const app = (i18nextInstance) => {
         getRSSExample(state, i18nextInstance);
       })
       .catch((err) => {
-        console.log(err);
         if (!(_.has(err, 'errors'))) {
           const errors = 'errorNetwork';
           state.errors = errors;
