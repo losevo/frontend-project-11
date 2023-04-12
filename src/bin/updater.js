@@ -1,14 +1,16 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
 import render from './render.js';
 
-const feeds = [];
+const update = (state, i18nextInstance) => {
+  if (state.urlList.length === 0) {
+    setTimeout(() => update(state, i18nextInstance), 5000);
+    return;
+  }
 
-const getRSSExample = (state, i18nextInstance) => {
-  state.urlList.map((url) => fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+  const promises = state.urlList.map((url) => fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => {
       if (response.ok) return response.json();
-      throw console.log('network!');
+      throw console.log('net svyazi');
     })
     .then((data) => {
       const parser = new DOMParser();
@@ -18,10 +20,10 @@ const getRSSExample = (state, i18nextInstance) => {
     .then((doc) => {
       const feed = doc.querySelector('title').innerHTML;
       const description = doc.querySelector('description').innerHTML;
-      if (!feeds.some((e) => e.feed === feed)) {
-        feeds.push({ feed, description });
+      if (!state.rss.some((e) => e.feed === feed)) {
+        state.rss.push({ feed, description });
         const items = doc.querySelectorAll('item');
-        feeds.map((feedThisRSS) => {
+        state.rss.map((feedThisRSS) => {
           feedThisRSS.stream = [];
           items.forEach((item) => {
             if (!feedThisRSS.stream.some((e) => e.title === item.querySelector('title').textContent)) {
@@ -36,20 +38,13 @@ const getRSSExample = (state, i18nextInstance) => {
           });
           return feedThisRSS;
         });
-        state.rss = feeds;
       }
       render(state, i18nextInstance);
     })
-    .catch((e) => {
-      if (_.startsWith(e.message, 'null')) {
-        state.errors = 'notContainRSS';
-        state.urlList.pop();
-      } else {
-        state.errors = 'errorNetwork';
-        state.urlList.pop();
-      }
-      render(state, i18nextInstance);
-    }));
+    .catch((e) => console.error(e.message)));
+
+  const promise = Promise.all(promises);
+  promise.then(() => setTimeout(() => update(state, i18nextInstance), 5000));
 };
 
-export default getRSSExample;
+export default update;
