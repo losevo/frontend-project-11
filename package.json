@@ -4,7 +4,6 @@
   "description": "My webpack project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=production --node-env=production",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --node-env=production",
@@ -23,6 +22,7 @@
   },
   "homepage": "https://github.com/losevo/frontend-project-11#readme",
   "devDependencies": {
+    "@playwright/test": "^1.32.3",
     "@webpack-cli/generators": "^2.5.0",
     "autoprefixer": "^10.4.13",
     "babel-loader": "^9.1.0",
