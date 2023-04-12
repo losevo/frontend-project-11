@@ -1,4 +1,5 @@
 // @ts-check
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { defineConfig, devices } = require('@playwright/test');
 
 /**
@@ -76,4 +77,3 @@ module.exports = defineConfig({
   //   reuseExistingServer: !process.env.CI,
   // },
 });
-
