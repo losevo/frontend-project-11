@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import _ from 'lodash';
 import render from './render.js';
 
 const update = (state, i18nextInstance) => {
@@ -41,7 +42,16 @@ const update = (state, i18nextInstance) => {
       }
       render(state, i18nextInstance);
     })
-    .catch((e) => console.error(e.message)));
+    .catch((e) => {
+      if (_.startsWith(e.message, 'null')) {
+        state.errors = 'notContainRSS';
+        state.urlList.pop();
+      } else {
+        state.errors = 'errorNetwork';
+        state.urlList.pop();
+      }
+      render(state, i18nextInstance);
+    }));
 
   const promise = Promise.all(promises);
   promise.then(() => setTimeout(() => update(state, i18nextInstance), 5000));
